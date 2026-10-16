@@ -8,7 +8,6 @@
     android:background="#F8F5FF"
     tools:context=".MainActivity">
 
-    <!-- Contenedor central para que todo quede centrado -->
     <LinearLayout
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -16,18 +15,11 @@
         android:layout_marginEnd="24dp"
         android:orientation="vertical"
         android:gravity="center"
+        android:background="@android:color/transparent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
-
-        <!-- Icono / Logo -->
-        <ImageView
-            android:layout_width="80dp"
-            android:layout_height="80dp"
-            android:layout_marginBottom="16dp"
-
-            app:tint="#6750A4" />
 
         <TextView
             android:id="@+id/textView"
@@ -37,6 +29,7 @@
             android:textSize="26sp"
             android:textStyle="bold"
             android:textColor="#1C1B1F"
+            android:gravity="center"
             android:layout_marginBottom="8dp" />
 
         <TextView
@@ -47,18 +40,25 @@
             android:textColor="#49454F"
             android:layout_marginBottom="48dp" />
 
-        <!-- Botón Google - Principal -->
+        <!-- BOTON GOOGLE CON LA G DE 4 COLORES -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/Btgoogle"
             android:layout_width="match_parent"
-            android:layout_height="56dp"
-            android:text="Continuar con Google"
+            android:layout_height="60dp"
+            android:text="Iniciar sesión con Google"
             android:textAllCaps="false"
+            android:textColor="#0B57D0"
+            android:textSize="15sp"
+            android:backgroundTint="@android:color/transparent"
+            app:cornerRadius="100dp"
+            app:strokeColor="#0B57D0"
+            app:strokeWidth="2dp"
+            app:icon="@drawable/ic_google_circle"
+            app:iconSize="32dp"
+            app:iconPadding="12dp"
+            app:iconTint="@null"
+            style="@style/Widget.Material3.Button.OutlinedButton" />
 
-            app:cornerRadius="16dp"
-            style="@style/Widget.Material3.Button" />
-
-        <!-- Separador -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -71,14 +71,13 @@
             <View android:layout_width="0dp" android:layout_height="1dp" android:layout_weight="1" android:background="#CAC4D0"/>
         </LinearLayout>
 
-        <!-- Botón Invitado - Secundario -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/Bt_Siguiente1"
             android:layout_width="match_parent"
             android:layout_height="56dp"
             android:text="Entrar como invitado"
             android:textAllCaps="false"
-            app:cornerRadius="16dp"
+            app:cornerRadius="100dp"
             style="@style/Widget.Material3.Button.OutlinedButton" />
 
     </LinearLayout>
