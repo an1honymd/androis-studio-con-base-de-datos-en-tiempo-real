@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#F8F5FF"
+    tools:context=".MainActivity">
+
+    <!-- Contenedor central para que todo quede centrado -->
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="24dp"
+        android:layout_marginEnd="24dp"
+        android:orientation="vertical"
+        android:gravity="center"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <!-- Icono / Logo -->
+        <ImageView
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:layout_marginBottom="16dp"
+
+            app:tint="#6750A4" />
+
+        <TextView
+            android:id="@+id/textView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Bienvenido a Vivión Artística"
+            android:textSize="26sp"
+            android:textStyle="bold"
+            android:textColor="#1C1B1F"
+            android:layout_marginBottom="8dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Elige cómo quieres continuar"
+            android:textSize="14sp"
+            android:textColor="#49454F"
+            android:layout_marginBottom="48dp" />
+
+        <!-- Botón Google - Principal -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/Btgoogle"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:text="Continuar con Google"
+            android:textAllCaps="false"
+
+            app:cornerRadius="16dp"
+            style="@style/Widget.Material3.Button" />
+
+        <!-- Separador -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginTop="24dp"
+            android:layout_marginBottom="24dp">
+            <View android:layout_width="0dp" android:layout_height="1dp" android:layout_weight="1" android:background="#CAC4D0"/>
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="  o  " android:textColor="#49454F"/>
+            <View android:layout_width="0dp" android:layout_height="1dp" android:layout_weight="1" android:background="#CAC4D0"/>
+        </LinearLayout>
+
+        <!-- Botón Invitado - Secundario -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/Bt_Siguiente1"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:text="Entrar como invitado"
+            android:textAllCaps="false"
+            app:cornerRadius="16dp"
+            style="@style/Widget.Material3.Button.OutlinedButton" />
+
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
