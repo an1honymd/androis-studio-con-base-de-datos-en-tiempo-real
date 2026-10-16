@@ -86,15 +86,25 @@ public class MainActivity extends AppCompatActivity {
             });
         }
 
+        // ESTO ERA LO QUE TE METIA DIRECTO SIN PEDIR CORREO
+        // Lo comentamos para que siempre tenga que dar click al boton
+        /*
         if (mAuth.getCurrentUser() != null) {
             startActivity(new Intent(this, menu.class));
             finish();
         }
+        */
     }
 
+    // --- AQUI ESTA EL ARREGLO ---
     private void signInWithGoogle() {
-        Intent signInIntent = mGoogleSignInClient.getSignInIntent();
-        googleSignInLauncher.launch(signInIntent);
+        // 1. Cerramos cualquier sesion de Google guardada en el telefono
+        mGoogleSignInClient.signOut().addOnCompleteListener(this, task -> {
+            // 2. Ahora lanzamos el selector de cuentas
+            Intent signInIntent = mGoogleSignInClient.getSignInIntent();
+            signInIntent.putExtra("prompt", "select_account");
+            googleSignInLauncher.launch(signInIntent);
+        });
     }
 
     private void firebaseAuthWithGoogle(String idToken) {
