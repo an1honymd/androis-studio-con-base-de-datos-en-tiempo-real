@@ -6,7 +6,7 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F8F5FF"
+    android:background="?attr/colorSurface"
     tools:context=".MainActivity">
 
     <LinearLayout
@@ -29,7 +29,7 @@
             android:text="Bienvenido a Vivión Artística"
             android:textSize="26sp"
             android:textStyle="bold"
-            android:textColor="#1C1B1F"
+            android:textColor="?attr/colorOnSurface"
             android:gravity="center"
             android:layout_marginBottom="8dp" />
 
@@ -38,7 +38,7 @@
             android:layout_height="wrap_content"
             android:text="Elige cómo quieres continuar"
             android:textSize="14sp"
-            android:textColor="#49454F"
+            android:textColor="?attr/colorOnSurfaceVariant"
             android:layout_marginBottom="48dp" />
 
         <com.google.android.material.button.MaterialButton
@@ -47,11 +47,8 @@
             android:layout_height="60dp"
             android:text="Iniciar sesión con Google"
             android:textAllCaps="false"
-            android:textColor="#0B57D0"
             android:textSize="15sp"
-            android:backgroundTint="@android:color/transparent"
             app:cornerRadius="100dp"
-            app:strokeColor="#0B57D0"
             app:strokeWidth="2dp"
             app:icon="@drawable/ic_google_circle"
             app:iconSize="32dp"
@@ -71,19 +68,19 @@
                 android:layout_width="0dp"
                 android:layout_height="1dp"
                 android:layout_weight="1"
-                android:background="#CAC4D0" />
+                android:background="?attr/colorOutlineVariant" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="  o  "
-                android:textColor="#49454F" />
+                android:textColor="?attr/colorOnSurfaceVariant" />
 
             <View
                 android:layout_width="0dp"
                 android:layout_height="1dp"
                 android:layout_weight="1"
-                android:background="#CAC4D0" />
+                android:background="?attr/colorOutlineVariant" />
 
         </LinearLayout>
 
@@ -97,6 +94,4 @@
             style="@style/Widget.Material3.Button.OutlinedButton" />
 
     </LinearLayout>
-
 </androidx.constraintlayout.widget.ConstraintLayout>
-

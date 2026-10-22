@@ -4,14 +4,13 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F6F5F9">
+    android:background="?attr/colorSurface">
 
-    <!-- FONDO MORADO SUPERIOR DECORATIVO -->
     <View
         android:id="@+id/viewHeader"
         android:layout_width="0dp"
         android:layout_height="180dp"
-        android:background="#6E5B8F"
+        android:background="?attr/colorPrimary"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
@@ -26,25 +25,22 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
-        <!-- Título -->
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Gestión de contactos"
             android:textSize="22sp"
             android:textStyle="bold"
-            android:textColor="#FFFFFF"
+            android:textColor="?attr/colorOnPrimary"
             android:gravity="center"
             android:layout_marginTop="12dp"
             android:layout_marginBottom="20dp" />
 
-        <!-- CARD FORMULARIO -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:cardCornerRadius="24dp"
-            app:cardElevation="6dp"
-            app:strokeWidth="0dp">
+            app:cardElevation="6dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -52,77 +48,46 @@
                 android:orientation="vertical"
                 android:padding="20dp">
 
-                <!-- Campo nombre -->
                 <com.google.android.material.textfield.TextInputLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="12dp"
-                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
-                    app:boxCornerRadiusTopStart="14dp"
-                    app:boxCornerRadiusTopEnd="14dp"
-                    app:boxCornerRadiusBottomStart="14dp"
-                    app:boxCornerRadiusBottomEnd="14dp"
-                    app:boxStrokeColor="#6E5B8F"
-                    app:hintTextColor="#6E5B8F"
-                    app:startIconDrawable="@android:drawable/ic_menu_myplaces"
-                    app:startIconTint="#6E5B8F">
+                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/editTextItemName"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:hint="Nombre"
-                        android:inputType="textPersonName"
-                        android:singleLine="true" />
+                        android:hint="Nombre" />
                 </com.google.android.material.textfield.TextInputLayout>
 
-                <!-- Campo apellido -->
                 <com.google.android.material.textfield.TextInputLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="12dp"
-                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
-                    app:boxCornerRadiusTopStart="14dp"
-                    app:boxCornerRadiusTopEnd="14dp"
-                    app:boxCornerRadiusBottomStart="14dp"
-                    app:boxCornerRadiusBottomEnd="14dp"
-                    app:boxStrokeColor="#6E5B8F"
-                    app:startIconDrawable="@android:drawable/ic_menu_edit"
-                    app:startIconTint="#6E5B8F">
+                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/editTextDescription"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:hint="Apellido"
-                        android:inputType="textPersonName"
-                        android:singleLine="true" />
+                        android:hint="Apellido" />
                 </com.google.android.material.textfield.TextInputLayout>
 
-                <!-- Campo teléfono -->
                 <com.google.android.material.textfield.TextInputLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="16dp"
-                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
-                    app:boxCornerRadiusTopStart="14dp"
-                    app:boxCornerRadiusTopEnd="14dp"
-                    app:boxCornerRadiusBottomStart="14dp"
-                    app:boxCornerRadiusBottomEnd="14dp"
-                    app:boxStrokeColor="#6E5B8F"
-                    app:startIconDrawable="@android:drawable/ic_menu_call"
-                    app:startIconTint="#6E5B8F">
+                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/editTextQuantity"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:hint="Número de teléfono"
-                        android:inputType="phone"
-                        android:singleLine="true" />
+                        android:inputType="phone" />
                 </com.google.android.material.textfield.TextInputLayout>
 
-                <!-- Botones en fila -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -136,10 +101,7 @@
                         android:layout_weight="1"
                         android:layout_marginEnd="8dp"
                         android:text="Guardar"
-                        android:textAllCaps="false"
-                        android:textStyle="bold"
                         app:cornerRadius="14dp"
-                        android:backgroundTint="#6E5B8F"
                         style="@style/Widget.Material3.Button" />
 
                     <com.google.android.material.button.MaterialButton
@@ -148,7 +110,6 @@
                         android:layout_height="52dp"
                         android:layout_weight="1"
                         android:text="Eliminar"
-                        android:textAllCaps="false"
                         android:enabled="false"
                         app:cornerRadius="14dp"
                         style="@style/Widget.Material3.Button.OutlinedButton" />
@@ -156,25 +117,23 @@
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- Título de la lista -->
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Contactos registrados"
             android:textSize="18sp"
             android:textStyle="bold"
-            android:textColor="#1C1B1F"
+            android:textColor="?attr/colorOnSurface"
             android:layout_marginTop="18dp"
             android:layout_marginBottom="8dp" />
 
-        <!-- CARD LISTA -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
             app:cardCornerRadius="20dp"
             app:cardElevation="2dp"
-            app:strokeColor="#E8E0F0"
+            app:strokeColor="?attr/colorOutlineVariant"
             app:strokeWidth="1dp">
 
             <FrameLayout
@@ -185,25 +144,22 @@
                     android:id="@+id/listaContactos"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:divider="#EDE7F6"
+                    android:divider="?attr/colorOutlineVariant"
                     android:dividerHeight="1dp"
                     android:padding="4dp"
-                    android:clipToPadding="false"
-                    android:background="@android:color/white"/>
+                    android:background="?attr/colorSurface"/>
 
                 <TextView
                     android:id="@+id/txtSinContactos"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:text="Todavía no hay contactos registrados."
-                    android:textColor="#8A8A8A"
-                    android:textSize="15sp"
+                    android:textColor="?attr/colorOnSurfaceVariant"
                     android:gravity="center"
                     android:visibility="gone" />
             </FrameLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- Botón regresar -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btregresar5"
             android:layout_width="wrap_content"
@@ -211,9 +167,7 @@
             android:layout_gravity="center"
             android:layout_marginTop="12dp"
             android:text="← Regresar"
-            android:textAllCaps="false"
             app:cornerRadius="20dp"
             style="@style/Widget.Material3.Button.TextButton" />
-
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

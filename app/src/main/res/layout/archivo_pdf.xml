@@ -5,7 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F8F5FF">
+    android:background="?attr/colorSurface">
 
     <LinearLayout
         android:layout_width="0dp"
@@ -24,7 +24,7 @@
             app:cardCornerRadius="24dp"
             app:cardElevation="0dp"
             app:strokeWidth="1dp"
-            app:strokeColor="#E7E0EC">
+            app:strokeColor="?attr/colorOutlineVariant">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -38,7 +38,7 @@
                     android:layout_height="64dp"
                     android:layout_marginBottom="16dp"
                     android:src="@android:drawable/ic_menu_upload"
-                    app:tint="#6750A4" />
+                    app:tint="?attr/colorPrimary" />
 
                 <TextView
                     android:id="@+id/textView2"
@@ -47,7 +47,7 @@
                     android:text="Archivo PDF"
                     android:textSize="22sp"
                     android:textStyle="bold"
-                    android:textColor="#1C1B1F"
+                    android:textColor="?attr/colorOnSurface"
                     android:layout_marginBottom="8dp" />
 
                 <TextView
@@ -55,7 +55,7 @@
                     android:layout_height="wrap_content"
                     android:text="En este apartado puedes seleccionar y subir archivos en formato PDF."
                     android:textSize="14sp"
-                    android:textColor="#49454F"
+                    android:textColor="?attr/colorOnSurfaceVariant"
                     android:gravity="center"
                     android:lineSpacingExtra="4dp" />
 
