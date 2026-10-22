@@ -3,6 +3,7 @@ package com.example.certificacion;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -16,7 +17,6 @@ import com.bumptech.glide.Glide;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
-import com.google.android.material.button.MaterialButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
@@ -25,15 +25,16 @@ public class menu extends AppCompatActivity {
     Switch switchTema;
     SharedPreferences prefs;
 
+    // PERFIL NUEVO
     ImageView imgPerfil;
     TextView tvNombrePerfil, tvCorreoPerfil;
-    MaterialButton btnCerrarSesion;
+    Button btnCerrarSesion;
     FirebaseAuth mAuth;
     GoogleSignInClient mGoogleSignInClient;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        // Cargar tema antes de crear vista
+        // Cargar tema ANTES
         prefs = getSharedPreferences("tema", MODE_PRIVATE);
         boolean oscuro = prefs.getBoolean("oscuro", false);
         AppCompatDelegate.setDefaultNightMode(
@@ -46,7 +47,7 @@ public class menu extends AppCompatActivity {
 
         Toast.makeText(this, "Vista Menu", Toast.LENGTH_SHORT).show();
 
-        // TEMA OSCURO
+        // TEMA
         switchTema = findViewById(R.id.switchTema);
         switchTema.setChecked(oscuro);
         switchTema.setOnCheckedChangeListener((v, isChecked) -> {
@@ -56,7 +57,7 @@ public class menu extends AppCompatActivity {
             prefs.edit().putBoolean("oscuro", isChecked).apply();
         });
 
-        // ===== PERFIL DE USUARIO GOOGLE =====
+        // --- INICIO CODIGO PERFIL ---
         imgPerfil = findViewById(R.id.imgPerfil);
         tvNombrePerfil = findViewById(R.id.tvNombrePerfil);
         tvCorreoPerfil = findViewById(R.id.tvCorreoPerfil);
@@ -75,21 +76,19 @@ public class menu extends AppCompatActivity {
             tvNombrePerfil.setText(user.getDisplayName());
             tvCorreoPerfil.setText(user.getEmail());
             if (user.getPhotoUrl() != null) {
-                Glide.with(this).load(user.getPhotoUrl()).circleCrop().into(imgPerfil);
+                Glide.with(this).load(user.getPhotoUrl()).into(imgPerfil);
             }
         }
 
         btnCerrarSesion.setOnClickListener(v -> {
             mAuth.signOut();
             mGoogleSignInClient.signOut().addOnCompleteListener(task -> {
-                Intent intent = new Intent(menu.this, MainActivity.class);
-                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                startActivity(intent);
+                startActivity(new Intent(menu.this, MainActivity.class));
                 finish();
             });
         });
+        // --- FIN CODIGO PERFIL ---
 
-        // BOTONES EXISTENTES
         findViewById(R.id.Bt_regresar1).setOnClickListener(v -> {
             startActivity(new Intent(menu.this, MainActivity.class));
             finish();
@@ -100,7 +99,7 @@ public class menu extends AppCompatActivity {
         });
 
         findViewById(R.id.Bt_VisualizarArchivos).setOnClickListener(v -> {
-            Toast.makeText(this, "Vista Visualización", Toast.LENGTH_SHORT).show();
+            startActivity(new Intent(menu.this, visualizar_archivos.class));
         });
 
         findViewById(R.id.Bt_Siguiente).setOnClickListener(v -> {
