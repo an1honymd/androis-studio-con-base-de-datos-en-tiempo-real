@@ -1,6 +1,7 @@
 package com.example.certificacion;
 
 import android.os.Bundle;
+import android.widget.Button;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
@@ -25,6 +26,11 @@ public class visualizar_archivos extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.visualizar_archivos);
+
+        // BOTÓN DE REGRESAR - AQUÍ DENTRO VA
+        Button btnRegresar = findViewById(R.id.btnRegresar);
+        btnRegresar.setOnClickListener(v -> finish());
+
         recyclerArchivos = findViewById(R.id.recyclerArchivos);
         searchView = findViewById(R.id.searchView);
         recyclerArchivos.setLayoutManager(new LinearLayoutManager(this));
@@ -49,10 +55,11 @@ public class visualizar_archivos extends AppCompatActivity {
             @Override public void onDataChange(@NonNull DataSnapshot snapshot) {
                 listaArchivos.clear();
                 for (DataSnapshot data : snapshot.getChildren()) {
-                    String nombre = data.child("nombre").getValue(String.class);
-                    if (nombre != null) listaArchivos.add(new Archivo(nombre));
+                    Archivo contacto = data.getValue(Archivo.class);
+                    if (contacto != null) {
+                        listaArchivos.add(contacto);
+                    }
                 }
-                // ESTA ES LA CORRECCIÓN - recreamos el adapter para que se actualice listaCompleta y el filtro funcione
                 adapter = new ArchivoAdapter(listaArchivos);
                 recyclerArchivos.setAdapter(adapter);
             }

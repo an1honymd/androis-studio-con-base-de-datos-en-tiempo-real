@@ -21,6 +21,12 @@ public class ArchivoAdapter extends RecyclerView.Adapter<ArchivoAdapter.ViewHold
         this.listaFiltrada = new ArrayList<>(lista);
     }
 
+    public void actualizarLista(List<Archivo> nuevaLista) {
+        this.listaOriginal = new ArrayList<>(nuevaLista);
+        this.listaFiltrada = new ArrayList<>(nuevaLista);
+        notifyDataSetChanged();
+    }
+
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -31,7 +37,25 @@ public class ArchivoAdapter extends RecyclerView.Adapter<ArchivoAdapter.ViewHold
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Archivo archivo = listaFiltrada.get(position);
-        holder.tvNombre.setText(archivo.getNombre());
+
+        // AQUÍ ESTÁ LA CORRECCIÓN - nombre + apellido
+        String nombreCompleto = archivo.getNombre();
+        if (archivo.getApellido() != null && !archivo.getApellido().isEmpty()) {
+            nombreCompleto += " " + archivo.getApellido();
+        }
+        holder.tvNombre.setText(nombreCompleto);
+
+        if (archivo.getTelefono() != null) {
+            holder.tvTelefono.setText(archivo.getTelefono());
+        } else {
+            holder.tvTelefono.setText("");
+        }
+
+        if (archivo.getCorreo() != null) {
+            holder.tvCorreo.setText(archivo.getCorreo());
+        } else {
+            holder.tvCorreo.setText("");
+        }
     }
 
     @Override
@@ -50,7 +74,8 @@ public class ArchivoAdapter extends RecyclerView.Adapter<ArchivoAdapter.ViewHold
                     filtrados = new ArrayList<>(listaOriginal);
                 } else {
                     for (Archivo item : listaOriginal) {
-                        if (item.getNombre().toLowerCase().contains(query)) {
+                        String completo = (item.getNombre() + " " + item.getApellido()).toLowerCase();
+                        if (completo.contains(query)) {
                             filtrados.add(item);
                         }
                     }
@@ -69,10 +94,12 @@ public class ArchivoAdapter extends RecyclerView.Adapter<ArchivoAdapter.ViewHold
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {
-        TextView tvNombre;
+        TextView tvNombre, tvTelefono, tvCorreo;
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             tvNombre = itemView.findViewById(R.id.tvNombreArchivo);
+            tvTelefono = itemView.findViewById(R.id.tvTelefonoArchivo);
+            tvCorreo = itemView.findViewById(R.id.tvCorreoArchivo);
         }
     }
 }
