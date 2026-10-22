@@ -19,7 +19,6 @@ import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.ApiException;
-
 import com.google.android.gms.tasks.Task;
 
 import com.google.firebase.auth.AuthCredential;
@@ -37,7 +36,11 @@ public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "FIREBASE";
 
+    private static final String URL_DATABASE =
+            "https://prueba-de-conexion-c09d6-default-rtdb.firebaseio.com/";
+
     private DatabaseReference referenciaFirebase;
+
     private FirebaseAuth mAuth;
 
     private GoogleSignInClient mGoogleSignInClient;
@@ -54,9 +57,11 @@ public class MainActivity extends AppCompatActivity {
         View vistaPrincipal = findViewById(R.id.main);
 
         if (vistaPrincipal != null) {
+
             ViewCompat.setOnApplyWindowInsetsListener(
                     vistaPrincipal,
                     (v, insets) -> {
+
                         Insets systemBars = insets.getInsets(
                                 WindowInsetsCompat.Type.systemBars()
                         );
@@ -76,26 +81,31 @@ public class MainActivity extends AppCompatActivity {
         // Inicializar Firebase Authentication.
         mAuth = FirebaseAuth.getInstance();
 
-        // Inicializar Firebase Realtime Database.
+        // Conectar con Firebase Realtime Database.
         conectarFirebase();
 
-        // Configurar el inicio de sesión con Google.
+        // Configurar inicio de sesión con Google.
         configurarGoogleSignIn();
 
         // Botón para iniciar sesión con Google.
         Button btnGoogle = findViewById(R.id.Btgoogle);
 
         if (btnGoogle != null) {
+
             btnGoogle.setOnClickListener(v -> signInWithGoogle());
+
         } else {
+
             Log.e(TAG, "No se encontró el botón Btgoogle.");
         }
 
-        // Botón para entrar como invitado.
-        Button buttonSiguiente = findViewById(R.id.Bt_Siguiente1);
+        // Botón para ingresar como invitado.
+        Button btnSiguiente = findViewById(R.id.Bt_Siguiente1);
 
-        if (buttonSiguiente != null) {
-            buttonSiguiente.setOnClickListener(v -> {
+        if (btnSiguiente != null) {
+
+            btnSiguiente.setOnClickListener(v -> {
+
                 Toast.makeText(
                         MainActivity.this,
                         "Entrando como invitado...",
@@ -104,7 +114,9 @@ public class MainActivity extends AppCompatActivity {
 
                 abrirMenu();
             });
+
         } else {
+
             Log.e(TAG, "No se encontró el botón Bt_Siguiente1.");
         }
 
@@ -115,7 +127,10 @@ public class MainActivity extends AppCompatActivity {
         ).show();
     }
 
-    // Configurar Google Sign-In.
+    // =====================================================
+    // CONFIGURAR GOOGLE SIGN-IN
+    // =====================================================
+
     private void configurarGoogleSignIn() {
 
         GoogleSignInOptions gso =
@@ -152,12 +167,19 @@ public class MainActivity extends AppCompatActivity {
                             );
 
                     try {
+
                         GoogleSignInAccount cuenta =
                                 task.getResult(ApiException.class);
 
-                        if (cuenta != null && cuenta.getIdToken() != null) {
-                            firebaseAuthWithGoogle(cuenta.getIdToken());
+                        if (cuenta != null
+                                && cuenta.getIdToken() != null) {
+
+                            firebaseAuthWithGoogle(
+                                    cuenta.getIdToken()
+                            );
+
                         } else {
+
                             Toast.makeText(
                                     MainActivity.this,
                                     "No se pudo obtener el token de Google.",
@@ -166,11 +188,17 @@ public class MainActivity extends AppCompatActivity {
                         }
 
                     } catch (ApiException e) {
-                        Log.e(TAG, "Error al iniciar sesión con Google", e);
+
+                        Log.e(
+                                TAG,
+                                "Error al iniciar sesión con Google",
+                                e
+                        );
 
                         Toast.makeText(
                                 MainActivity.this,
-                                "Error de Google: " + e.getStatusCode(),
+                                "Error de Google: "
+                                        + e.getStatusCode(),
                                 Toast.LENGTH_LONG
                         ).show();
                     }
@@ -178,7 +206,10 @@ public class MainActivity extends AppCompatActivity {
         );
     }
 
-    // Solicitar selección de cuenta de Google.
+    // =====================================================
+    // INICIAR SESIÓN CON GOOGLE
+    // =====================================================
+
     private void signInWithGoogle() {
 
         mGoogleSignInClient.signOut()
@@ -191,7 +222,10 @@ public class MainActivity extends AppCompatActivity {
                 });
     }
 
-    // Autenticar al usuario con Firebase.
+    // =====================================================
+    // AUTENTICAR CON FIREBASE
+    // =====================================================
+
     private void firebaseAuthWithGoogle(String idToken) {
 
         AuthCredential credential =
@@ -208,7 +242,9 @@ public class MainActivity extends AppCompatActivity {
 
                             String nombre = usuario.getDisplayName();
 
-                            if (nombre == null || nombre.trim().isEmpty()) {
+                            if (nombre == null
+                                    || nombre.trim().isEmpty()) {
+
                                 nombre = usuario.getEmail();
                             }
 
@@ -218,8 +254,10 @@ public class MainActivity extends AppCompatActivity {
                                     Toast.LENGTH_LONG
                             ).show();
 
+                            // Guardar información de prueba.
                             guardarPruebaConexion();
 
+                            // Abrir el menú.
                             abrirMenu();
                         }
 
@@ -240,24 +278,34 @@ public class MainActivity extends AppCompatActivity {
                 });
     }
 
-    // Conectar con Firebase Realtime Database.
+    // =====================================================
+    // CONECTAR CON FIREBASE REALTIME DATABASE
+    // =====================================================
+
     private void conectarFirebase() {
 
         try {
+
             FirebaseDatabase firebaseDatabase =
-                    FirebaseDatabase.getInstance(
-                            "https://prueba-de-conexion-c09d6-default-rtdb.firebaseio.com"
-                    );
+                    FirebaseDatabase.getInstance(URL_DATABASE);
 
-            referenciaFirebase = firebaseDatabase.getReference();
+            referenciaFirebase =
+                    firebaseDatabase.getReference();
 
-            Log.d(TAG, "Firebase inicializado correctamente.");
+            Log.d(
+                    TAG,
+                    "Firebase Realtime Database inicializado correctamente."
+            );
 
         } catch (Exception e) {
 
             referenciaFirebase = null;
 
-            Log.e(TAG, "Error al inicializar Firebase.", e);
+            Log.e(
+                    TAG,
+                    "Error al inicializar Firebase.",
+                    e
+            );
 
             Toast.makeText(
                     this,
@@ -267,11 +315,19 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    // Guardar datos de prueba en Realtime Database.
+    // =====================================================
+    // GUARDAR DATOS DE PRUEBA DE CONEXIÓN
+    // =====================================================
+
     private void guardarPruebaConexion() {
 
         if (referenciaFirebase == null) {
-            Log.e(TAG, "La referencia de Firebase no está disponible.");
+
+            Log.e(
+                    TAG,
+                    "La referencia de Firebase no está disponible."
+            );
+
             return;
         }
 
@@ -283,32 +339,67 @@ public class MainActivity extends AppCompatActivity {
 
         Map<String, Object> datos = new HashMap<>();
 
-        datos.put("mensaje", "Conexion correcta con Firebase");
-        datos.put("usuario", usuario.getEmail());
-        datos.put("nombre", usuario.getDisplayName());
-        datos.put("uid", usuario.getUid());
-        datos.put("estado", "Conectado");
-        datos.put("fecha", System.currentTimeMillis());
+        datos.put(
+                "mensaje",
+                "Conexion correcta con Firebase"
+        );
+
+        datos.put(
+                "usuario",
+                usuario.getEmail()
+        );
+
+        datos.put(
+                "nombre",
+                usuario.getDisplayName()
+        );
+
+        datos.put(
+                "uid",
+                usuario.getUid()
+        );
+
+        datos.put(
+                "estado",
+                "Conectado"
+        );
+
+        datos.put(
+                "fecha",
+                System.currentTimeMillis()
+        );
 
         referenciaFirebase
                 .child("pruebas_conexion")
                 .push()
                 .setValue(datos)
-                .addOnSuccessListener(unused ->
-                        Log.d(TAG, "Datos guardados correctamente.")
-                )
+                .addOnSuccessListener(unused -> {
+
+                    Log.d(
+                            TAG,
+                            "Datos de prueba guardados correctamente."
+                    );
+                })
                 .addOnFailureListener(e -> {
-                    Log.e(TAG, "Error al guardar datos en Firebase.", e);
+
+                    Log.e(
+                            TAG,
+                            "Error al guardar datos de prueba.",
+                            e
+                    );
 
                     Toast.makeText(
                             MainActivity.this,
-                            "No se pudieron guardar los datos en Firebase.",
+                            "No se pudieron guardar los datos de prueba.",
                             Toast.LENGTH_LONG
                     ).show();
                 });
     }
 
-    // Abrir el menú principal.
+    // =====================================================
+    // ABRIR MENÚ PRINCIPAL
+    // =====================================================
+
     private void abrirMenu() {
 
         Intent intent = new Intent(
