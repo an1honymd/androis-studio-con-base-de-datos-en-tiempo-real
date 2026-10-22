@@ -19,10 +19,14 @@ import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.ApiException;
+
 import com.google.android.gms.tasks.Task;
+
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
+
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
@@ -32,112 +36,328 @@ import java.util.Map;
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "FIREBASE";
+
+    // Firebase
     private DatabaseReference referenciaFirebase;
     private FirebaseAuth mAuth;
+
+    // Inicio de sesión con Google
     private GoogleSignInClient mGoogleSignInClient;
+
     private ActivityResultLauncher<Intent> googleSignInLauncher;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_main);
 
+        // Ajustar la interfaz a las barras del sistema
         View vistaPrincipal = findViewById(R.id.main);
+
         if (vistaPrincipal != null) {
-            ViewCompat.setOnApplyWindowInsetsListener(vistaPrincipal, (v, insets) -> {
-                Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-                v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-                return insets;
+            ViewCompat.setOnApplyWindowInsetsListener(
+                    vistaPrincipal,
+                    (v, insets) -> {
+
+                        Insets systemBars = insets.getInsets(
+                                WindowInsetsCompat.Type.systemBars()
+                        );
+
+                        v.setPadding(
+                                systemBars.left,
+                                systemBars.top,
+                                systemBars.right,
+                                systemBars.bottom
+                        );
+
+                        return insets;
+                    }
+            );
+        }
+
+        // Inicializar Firebase Authentication
+        mAuth = FirebaseAuth.getInstance();
+
+        // Conectar con Firebase Realtime Database
+        conectarFirebase();
+
+        // Configurar el inicio de sesión con Google
+        configurarGoogleSignIn();
+
+        // Botón para iniciar sesión con Google
+        Button btnGoogle = findViewById(R.id.Btgoogle);
+
+        if (btnGoogle != null) {
+            btnGoogle.setOnClickListener(v -> signInWithGoogle());
+        } else {
+            Log.e(TAG, "No se encontró el botón Btgoogle en activity_main.xml");
+        }
+
+        // Botón para continuar
+        Button buttonSiguiente = findViewById(R.id.Bt_Siguiente1);
+
+        if (buttonSiguiente != null) {
+            buttonSiguiente.setOnClickListener(v -> {
+
+                Toast.makeText(
+                        MainActivity.this,
+                        "Continuando...",
+                        Toast.LENGTH_SHORT
+                ).show();
+
+                abrirMenu();
+
             });
         }
 
-        mAuth = FirebaseAuth.getInstance();
-        conectarFirebase();
+        Toast.makeText(
+                this,
+                "Bienvenido",
+                Toast.LENGTH_SHORT
+        ).show();
+    }
 
-        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestIdToken(getString(R.string.default_web_client_id))
-                .requestEmail()
-                .build();
+    // Configurar Google Sign-In
+    private void configurarGoogleSignIn() {
+
+        GoogleSignInOptions gso =
+                new GoogleSignInOptions.Builder(
+                        GoogleSignInOptions.DEFAULT_SIGN_IN
+                )
+                        .requestIdToken(
+                                getString(R.string.default_web_client_id)
+                        )
+                        .requestEmail()
+                        .build();
 
         mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
 
         googleSignInLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
                 result -> {
-                    if (result.getData() != null) {
-                        Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(result.getData());
-                        try {
-                            GoogleSignInAccount account = task.getResult(ApiException.class);
-                            firebaseAuthWithGoogle(account.getIdToken());
-                        } catch (ApiException e) {
-                            Log.e(TAG, "Google sign in failed", e);
-                            Toast.makeText(this, "Error Google: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                        }
+
+                    if (result.getResultCode() != RESULT_OK
+                            || result.getData() == null) {
+
+                        Toast.makeText(
+                                MainActivity.this,
+                                "Inicio de sesión cancelado.",
+                                Toast.LENGTH_SHORT
+                        ).show();
+
+                        return;
                     }
-                });
 
-        Button btnGoogle = findViewById(R.id.Btgoogle);
-        btnGoogle.setOnClickListener(v -> signInWithGoogle());
+                    Task<GoogleSignInAccount> task =
+                            GoogleSignIn.getSignedInAccountFromIntent(
+                                    result.getData()
+                            );
 
-        Button buttonSiguiente = findViewById(R.id.Bt_Siguiente1);
-        if (buttonSiguiente != null) {
-            buttonSiguiente.setOnClickListener(view -> {
-                startActivity(new Intent(MainActivity.this, menu.class));
-            });
-        }
+                    try {
 
-        // ESTO ERA LO QUE TE METIA DIRECTO SIN PEDIR CORREO
-        // Lo comentamos para que siempre tenga que dar click al boton
-        /*
-        if (mAuth.getCurrentUser() != null) {
-            startActivity(new Intent(this, menu.class));
-            finish();
-        }
-        */
+                        GoogleSignInAccount cuenta =
+                                task.getResult(ApiException.class);
+
+                        if (cuenta != null && cuenta.getIdToken() != null) {
+
+                            firebaseAuthWithGoogle(cuenta.getIdToken());
+
+                        } else {
+
+                            Toast.makeText(
+                                    MainActivity.this,
+                                    "No se pudo obtener el token de Google.",
+                                    Toast.LENGTH_LONG
+                            ).show();
+
+                        }
+
+                    } catch (ApiException e) {
+
+                        Log.e(
+                                TAG,
+                                "Error al iniciar sesión con Google",
+                                e
+                        );
+
+                        Toast.makeText(
+                                MainActivity.this,
+                                "Error de Google: " + e.getStatusCode(),
+                                Toast.LENGTH_LONG
+                        ).show();
+
+                    }
+                }
+        );
     }
 
-    // --- AQUI ESTA EL ARREGLO ---
+    // Solicitar selección de cuenta de Google
     private void signInWithGoogle() {
-        // 1. Cerramos cualquier sesion de Google guardada en el telefono
-        mGoogleSignInClient.signOut().addOnCompleteListener(this, task -> {
-            // 2. Ahora lanzamos el selector de cuentas
-            Intent signInIntent = mGoogleSignInClient.getSignInIntent();
-            signInIntent.putExtra("prompt", "select_account");
-            googleSignInLauncher.launch(signInIntent);
-        });
+
+        mGoogleSignInClient.signOut()
+                .addOnCompleteListener(this, task -> {
+
+                    Intent signInIntent =
+                            mGoogleSignInClient.getSignInIntent();
+
+                    googleSignInLauncher.launch(signInIntent);
+
+                });
     }
 
+    // Autenticar al usuario con Firebase
     private void firebaseAuthWithGoogle(String idToken) {
-        AuthCredential credential = GoogleAuthProvider.getCredential(idToken, null);
+
+        AuthCredential credential =
+                GoogleAuthProvider.getCredential(idToken, null);
+
         mAuth.signInWithCredential(credential)
                 .addOnCompleteListener(this, task -> {
+
                     if (task.isSuccessful()) {
-                        Toast.makeText(this, "Bienvenido " + mAuth.getCurrentUser().getDisplayName(), Toast.LENGTH_SHORT).show();
-                        guardarPruebaConexion();
-                        startActivity(new Intent(MainActivity.this, menu.class));
-                        finish();
+
+                        FirebaseUser usuario = mAuth.getCurrentUser();
+
+                        if (usuario != null) {
+
+                            String nombre = usuario.getDisplayName();
+
+                            if (nombre == null || nombre.trim().isEmpty()) {
+                                nombre = usuario.getEmail();
+                            }
+
+                            Toast.makeText(
+                                    MainActivity.this,
+                                    "Bienvenido " + nombre,
+                                    Toast.LENGTH_LONG
+                            ).show();
+
+                            // Guardar información del usuario en Realtime Database
+                            guardarPruebaConexion();
+
+                            // Abrir el menú principal
+                            abrirMenu();
+
+                        }
+
                     } else {
-                        Toast.makeText(this, "Fallo autenticación.", Toast.LENGTH_SHORT).show();
+
+                        Log.e(
+                                TAG,
+                                "Error de autenticación con Firebase",
+                                task.getException()
+                        );
+
+                        Toast.makeText(
+                                MainActivity.this,
+                                "No se pudo iniciar sesión con Firebase.",
+                                Toast.LENGTH_LONG
+                        ).show();
+
                     }
                 });
     }
 
+    // Inicializar Firebase Realtime Database
     private void conectarFirebase() {
+
         try {
-            FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance("https://prueba-de-conexion-c09d6-default-rtdb.firebaseio.com");
+
+            FirebaseDatabase firebaseDatabase =
+                    FirebaseDatabase.getInstance(
+                            "https://prueba-de-conexion-c09d6-default-rtdb.firebaseio.com"
+                    );
+
             referenciaFirebase = firebaseDatabase.getReference();
-            Log.d(TAG, "Firebase inicializado correctamente.");
+
+            Log.d(
+                    TAG,
+                    "Firebase Realtime Database inicializado correctamente."
+            );
+
         } catch (Exception e) {
-            Log.e(TAG, "Error al inicializar Firebase.", e);
+
+            referenciaFirebase = null;
+
+            Log.e(
+                    TAG,
+                    "Error al inicializar Firebase Realtime Database",
+                    e
+            );
+
+            Toast.makeText(
+                    this,
+                    "Error al conectar con Firebase.",
+                    Toast.LENGTH_LONG
+            ).show();
         }
     }
 
+    // Guardar datos de prueba en Realtime Database
     private void guardarPruebaConexion() {
-        if (referenciaFirebase == null) return;
+
+        if (referenciaFirebase == null) {
+
+            Log.e(TAG, "La referencia de Firebase no está disponible.");
+            return;
+
+        }
+
+        FirebaseUser usuario = mAuth.getCurrentUser();
+
+        if (usuario == null) {
+            return;
+        }
+
         Map<String, Object> datos = new HashMap<>();
+
         datos.put("mensaje", "Conexion correcta con Firebase");
-        datos.put("usuario", mAuth.getCurrentUser() != null ? mAuth.getCurrentUser().getEmail() : "invitado");
+        datos.put("usuario", usuario.getEmail());
+        datos.put("nombre", usuario.getDisplayName());
+        datos.put("uid", usuario.getUid());
         datos.put("estado", "Conectado");
-        referenciaFirebase.child("pruebas_conexion").push().setValue(datos);
+        datos.put("fecha", System.currentTimeMillis());
+
+        referenciaFirebase
+                .child("pruebas_conexion")
+                .push()
+                .setValue(datos)
+                .addOnSuccessListener(unused -> {
+
+                    Log.d(
+                            TAG,
+                            "Datos guardados correctamente en Firebase."
+                    );
+
+                })
+                .addOnFailureListener(e -> {
+
+                    Log.e(
+                            TAG,
+                            "Error al guardar datos en Firebase",
+                            e
+                    );
+
+                    Toast.makeText(
+                            MainActivity.this,
+                            "No se pudieron guardar los datos en Firebase.",
+                            Toast.LENGTH_LONG
+                    ).show();
+
+                });
+    }
+
+    // Abrir el menú principal
+    private void abrirMenu() {
+
+        Intent intent = new Intent(
+                MainActivity.this,
+                menu.class
+        );
+
+        startActivity(intent);
+
+        finish();
     }
 }
