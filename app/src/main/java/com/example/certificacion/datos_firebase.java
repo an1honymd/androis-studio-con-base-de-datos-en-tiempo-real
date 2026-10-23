@@ -1,6 +1,9 @@
 package com.example.certificacion;
 
+import android.graphics.Color;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,6 +20,8 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.android.material.snackbar.Snackbar;
+import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -30,12 +35,13 @@ import java.util.Map;
 public class datos_firebase extends AppCompatActivity {
 
     private static final String TAG = "FIREBASE";
-
     private DatabaseReference referenciaFirebase;
 
     private EditText editTextItemNombre;
     private EditText editTextDescription;
     private EditText editTextQuantity;
+
+    private TextInputLayout tilNombre, tilApellido, tilTelefono;
 
     private Button btnSave;
     private Button btnEliminar;
@@ -65,6 +71,11 @@ public class datos_firebase extends AppCompatActivity {
         editTextDescription = findViewById(R.id.editTextDescription);
         editTextQuantity = findViewById(R.id.editTextQuantity);
 
+        // NUEVO - Referencias a los TextInputLayout
+        tilNombre = findViewById(R.id.tilNombre);
+        tilApellido = findViewById(R.id.tilApellido);
+        tilTelefono = findViewById(R.id.tilTelefono);
+
         btnSave = findViewById(R.id.btnSave);
         btnEliminar = findViewById(R.id.btnEliminar);
         btnRegresar = findViewById(R.id.btregresar5);
@@ -73,8 +84,6 @@ public class datos_firebase extends AppCompatActivity {
         vistaSinContactos = findViewById(R.id.txtSinContactos);
 
         contactos = new ArrayList<>();
-
-        // NUEVO ADAPTADOR BONITO
         adaptador = new ContactoAdapter(this, contactos);
         listaContactos.setAdapter(adaptador);
         listaContactos.setEmptyView(vistaSinContactos);
@@ -83,6 +92,18 @@ public class datos_firebase extends AppCompatActivity {
 
         btnSave.setOnClickListener(v -> guardarOActualizarContacto());
         btnEliminar.setOnClickListener(v -> confirmarEliminacion());
+
+        // NUEVO - Que se borre el error al escribir
+        editTextItemNombre.addTextChangedListener(new SimpleWatcher() {
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
+                tilNombre.setError(null);
+            }
+        });
+        editTextQuantity.addTextChangedListener(new SimpleWatcher() {
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
+                tilTelefono.setError(null);
+            }
+        });
 
         listaContactos.setOnItemClickListener((parent, view, position, id) -> {
             if (position < 0 || position >= contactos.size()) return;
@@ -95,12 +116,67 @@ public class datos_firebase extends AppCompatActivity {
 
             btnSave.setText("Actualizar");
             btnEliminar.setEnabled(true);
-
-            Toast.makeText(datos_firebase.this, "Contacto seleccionado para editar", Toast.LENGTH_SHORT).show();
         });
 
         btnRegresar.setOnClickListener(v -> finish());
         configurarListenerContactos();
+    }
+
+    // NUEVO - VALIDACIÓN CON SNACKBAR
+    private boolean validarDatos() {
+        String nombre = editTextItemNombre.getText().toString().trim();
+        String apellido = editTextDescription.getText().toString().trim();
+        String telefono = editTextQuantity.getText().toString().trim();
+
+        if (nombre.isEmpty()) {
+            tilNombre.setError("El nombre es obligatorio");
+            mostrarError("El nombre no puede ir vacío");
+            editTextItemNombre.requestFocus();
+            return false;
+        } else {
+            tilNombre.setError(null);
+        }
+
+        if (apellido.isEmpty()) {
+            tilApellido.setError("El apellido es obligatorio");
+            mostrarError("El apellido no puede ir vacío");
+            editTextDescription.requestFocus();
+            return false;
+        } else {
+            tilApellido.setError(null);
+        }
+
+        if (telefono.isEmpty()) {
+            tilTelefono.setError("El teléfono es obligatorio");
+            mostrarError("El teléfono no puede ir vacío");
+            editTextQuantity.requestFocus();
+            return false;
+        }
+
+        if (telefono.length() < 8) {
+            tilTelefono.setError("Debe tener 8 dígitos mínimo");
+            mostrarError("El teléfono debe tener al menos 8 dígitos");
+            editTextQuantity.requestFocus();
+            return false;
+        } else {
+            tilTelefono.setError(null);
+        }
+
+        return true;
+    }
+
+    private void mostrarError(String mensaje) {
+        Snackbar.make(findViewById(android.R.id.content), mensaje, Snackbar.LENGTH_LONG)
+                .setBackgroundTint(Color.RED)
+                .setTextColor(Color.WHITE)
+                .show();
+    }
+
+    private void mostrarExito(String mensaje) {
+        Snackbar.make(findViewById(android.R.id.content), mensaje, Snackbar.LENGTH_LONG)
+                .setBackgroundTint(Color.parseColor("#2E7D32"))
+                .setTextColor(Color.WHITE)
+                .show();
     }
 
     private void configurarListenerContactos() {
@@ -130,13 +206,12 @@ public class datos_firebase extends AppCompatActivity {
                     }
                     if (!existe) limpiarFormulario();
                 }
-                Log.d(TAG, "Contactos recibidos: " + contactos.size());
             }
 
             @Override
             public void onCancelled(DatabaseError error) {
                 Log.e(TAG, "Error al consultar contactos: " + error.getMessage());
-                Toast.makeText(datos_firebase.this, "No se pudieron consultar: " + error.getMessage(), Toast.LENGTH_LONG).show();
+                mostrarError("No se pudieron consultar: " + error.getMessage());
             }
         };
     }
@@ -158,13 +233,12 @@ public class datos_firebase extends AppCompatActivity {
     }
 
     private void guardarOActualizarContacto() {
+        // AHORA VALIDA ANTES DE GUARDAR
+        if (!validarDatos()) return;
+
         String nombre = editTextItemNombre.getText().toString().trim();
         String apellido = editTextDescription.getText().toString().trim();
         String telefono = editTextQuantity.getText().toString().trim();
-
-        if (nombre.isEmpty()) { editTextItemNombre.setError("Ingresa el nombre"); editTextItemNombre.requestFocus(); return; }
-        if (apellido.isEmpty()) { editTextDescription.setError("Ingresa el apellido"); editTextDescription.requestFocus(); return; }
-        if (telefono.isEmpty()) { editTextQuantity.setError("Ingresa el teléfono"); editTextQuantity.requestFocus(); return; }
 
         Map<String, Object> datos = new HashMap<>();
         datos.put("nombre", nombre);
@@ -174,17 +248,17 @@ public class datos_firebase extends AppCompatActivity {
 
         if (contactoSeleccionadoKey == null) {
             referenciaFirebase.push().setValue(datos)
-                    .addOnSuccessListener(unused -> { Toast.makeText(this, "Contacto guardado correctamente", Toast.LENGTH_SHORT).show(); limpiarFormulario(); })
-                    .addOnFailureListener(e -> Toast.makeText(this, "Error al guardar: " + e.getMessage(), Toast.LENGTH_LONG).show());
+                    .addOnSuccessListener(unused -> { mostrarExito("Contacto guardado correctamente"); limpiarFormulario(); })
+                    .addOnFailureListener(e -> mostrarError("Error al guardar: " + e.getMessage()));
         } else {
             referenciaFirebase.child(contactoSeleccionadoKey).updateChildren(datos)
-                    .addOnSuccessListener(unused -> { Toast.makeText(this, "Contacto actualizado correctamente", Toast.LENGTH_SHORT).show(); limpiarFormulario(); })
-                    .addOnFailureListener(e -> Toast.makeText(this, "Error al actualizar: " + e.getMessage(), Toast.LENGTH_LONG).show());
+                    .addOnSuccessListener(unused -> { mostrarExito("Contacto actualizado correctamente"); limpiarFormulario(); })
+                    .addOnFailureListener(e -> mostrarError("Error al actualizar: " + e.getMessage()));
         }
     }
 
     private void confirmarEliminacion() {
-        if (contactoSeleccionadoKey == null) { Toast.makeText(this, "Selecciona un contacto primero", Toast.LENGTH_SHORT).show(); return; }
+        if (contactoSeleccionadoKey == null) { mostrarError("Selecciona un contacto primero"); return; }
         new AlertDialog.Builder(this)
                 .setTitle("Eliminar contacto")
                 .setMessage("¿Estás seguro de que deseas eliminar este contacto?")
@@ -196,8 +270,8 @@ public class datos_firebase extends AppCompatActivity {
     private void eliminarContacto() {
         if (contactoSeleccionadoKey == null) return;
         referenciaFirebase.child(contactoSeleccionadoKey).removeValue()
-                .addOnSuccessListener(unused -> { Toast.makeText(this, "Contacto eliminado correctamente", Toast.LENGTH_SHORT).show(); limpiarFormulario(); })
-                .addOnFailureListener(e -> Toast.makeText(this, "Error al eliminar: " + e.getMessage(), Toast.LENGTH_LONG).show());
+                .addOnSuccessListener(unused -> { mostrarExito("Contacto eliminado"); limpiarFormulario(); })
+                .addOnFailureListener(e -> mostrarError("Error al eliminar: " + e.getMessage()));
     }
 
     private void limpiarFormulario() {
@@ -205,16 +279,21 @@ public class datos_firebase extends AppCompatActivity {
         editTextItemNombre.setText("");
         editTextDescription.setText("");
         editTextQuantity.setText("");
+        tilNombre.setError(null);
+        tilApellido.setError(null);
+        tilTelefono.setError(null);
         btnSave.setText("Guardar");
         btnEliminar.setEnabled(false);
         listaContactos.clearChoices();
     }
 
-    // =====================================================
-    // ADAPTADOR NUEVO PARA EL DISEÑO BONITO
-    // =====================================================
-    private static class ContactoAdapter extends ArrayAdapter<Contacto> {
+    // Helper para TextWatcher
+    private abstract static class SimpleWatcher implements TextWatcher {
+        @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+        @Override public void afterTextChanged(Editable s) {}
+    }
 
+    private static class ContactoAdapter extends ArrayAdapter<Contacto> {
         ContactoAdapter(datos_firebase context, ArrayList<Contacto> contactos) {
             super(context, 0, contactos);
         }
@@ -225,7 +304,6 @@ public class datos_firebase extends AppCompatActivity {
             if (convertView == null) {
                 convertView = LayoutInflater.from(getContext()).inflate(R.layout.item_contacto, parent, false);
             }
-
             Contacto contacto = getItem(position);
             if (contacto == null) return convertView;
 
@@ -237,7 +315,6 @@ public class datos_firebase extends AppCompatActivity {
             tvNombre.setText(nombreCompleto);
             tvTelefono.setText(contacto.telefono);
 
-            // Iniciales para el circulo morado
             String iniciales = "";
             if (!contacto.nombre.isEmpty()) iniciales += contacto.nombre.substring(0, 1).toUpperCase();
             if (!contacto.apellido.isEmpty()) iniciales += contacto.apellido.substring(0, 1).toUpperCase();
