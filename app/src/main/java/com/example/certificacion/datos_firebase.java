@@ -6,6 +6,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.pdf.PdfDocument;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
@@ -71,6 +72,11 @@ public class datos_firebase extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.datos_firebase);
+
+        // --- PERMISO NOTIFICACIONES ---
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            requestPermissions(new String[]{android.Manifest.permission.POST_NOTIFICATIONS}, 101);
+        }
 
         FirebaseDatabase firebaseDatabase =
                 FirebaseDatabase.getInstance(
@@ -257,16 +263,23 @@ public class datos_firebase extends AppCompatActivity {
 
         if (contactoSeleccionadoKey == null) {
             referenciaFirebase.push().setValue(datos)
-                    .addOnSuccessListener(unused -> { mostrarExito("Contacto guardado correctamente"); limpiarFormulario(); })
+                    .addOnSuccessListener(unused -> {
+                        mostrarExito("Contacto guardado correctamente");
+                        MyFirebaseMessagingService.mostrarNotificacionLocal(this, "Contacto nuevo", nombre + " " + apellido + " fue agregado");
+                        limpiarFormulario();
+                    })
                     .addOnFailureListener(e -> mostrarError("Error al guardar: " + e.getMessage()));
         } else {
             referenciaFirebase.child(contactoSeleccionadoKey).updateChildren(datos)
-                    .addOnSuccessListener(unused -> { mostrarExito("Contacto actualizado correctamente"); limpiarFormulario(); })
+                    .addOnSuccessListener(unused -> {
+                        mostrarExito("Contacto actualizado correctamente");
+                        MyFirebaseMessagingService.mostrarNotificacionLocal(this, "Contacto actualizado", nombre + " " + apellido + " fue actualizado");
+                        limpiarFormulario();
+                    })
                     .addOnFailureListener(e -> mostrarError("Error al actualizar: " + e.getMessage()));
         }
     }
 
-    // =========== FUNCION PDF ===========
     private void exportarContactosAPDF() {
         if (contactos.isEmpty()) {
             mostrarError("No hay contactos para exportar");
@@ -295,7 +308,6 @@ public class datos_firebase extends AppCompatActivity {
         paint.setColor(Color.GRAY);
         canvas.drawLine(40, 85, 555, 85, paint);
 
-        // Encabezado
         headerPaint.setTextSize(12);
         headerPaint.setFakeBoldText(true);
         headerPaint.setColor(Color.WHITE);
@@ -320,7 +332,6 @@ public class datos_firebase extends AppCompatActivity {
             Contacto c = contactos.get(i);
             String nombreCompleto = c.nombre + " " + c.apellido;
 
-            // Alternar color de fila
             if (i % 2 == 0) {
                 Paint rowBg = new Paint();
                 rowBg.setColor(Color.parseColor("#F3F0FF"));
@@ -370,7 +381,11 @@ public class datos_firebase extends AppCompatActivity {
     private void eliminarContacto() {
         if (contactoSeleccionadoKey == null) return;
         referenciaFirebase.child(contactoSeleccionadoKey).removeValue()
-                .addOnSuccessListener(unused -> { mostrarExito("Contacto eliminado"); limpiarFormulario(); })
+                .addOnSuccessListener(unused -> {
+                    mostrarExito("Contacto eliminado");
+                    MyFirebaseMessagingService.mostrarNotificacionLocal(this, "Contacto eliminado", "Un contacto fue eliminado");
+                    limpiarFormulario();
+                })
                 .addOnFailureListener(e -> mostrarError("Error al eliminar: " + e.getMessage()));
     }
 
