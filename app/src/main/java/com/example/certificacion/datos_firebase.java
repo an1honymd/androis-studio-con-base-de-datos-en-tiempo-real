@@ -1,7 +1,14 @@
 package com.example.certificacion;
 
+import android.content.ContentValues;
+import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.pdf.PdfDocument;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
+import android.provider.MediaStore;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -13,7 +20,6 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -28,8 +34,12 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.io.OutputStream;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 public class datos_firebase extends AppCompatActivity {
@@ -46,6 +56,7 @@ public class datos_firebase extends AppCompatActivity {
     private Button btnSave;
     private Button btnEliminar;
     private Button btnRegresar;
+    private Button btnExportarPDF;
 
     private ListView listaContactos;
     private View vistaSinContactos;
@@ -71,7 +82,6 @@ public class datos_firebase extends AppCompatActivity {
         editTextDescription = findViewById(R.id.editTextDescription);
         editTextQuantity = findViewById(R.id.editTextQuantity);
 
-        // NUEVO - Referencias a los TextInputLayout
         tilNombre = findViewById(R.id.tilNombre);
         tilApellido = findViewById(R.id.tilApellido);
         tilTelefono = findViewById(R.id.tilTelefono);
@@ -79,6 +89,7 @@ public class datos_firebase extends AppCompatActivity {
         btnSave = findViewById(R.id.btnSave);
         btnEliminar = findViewById(R.id.btnEliminar);
         btnRegresar = findViewById(R.id.btregresar5);
+        btnExportarPDF = findViewById(R.id.btnExportarPDF);
 
         listaContactos = findViewById(R.id.listaContactos);
         vistaSinContactos = findViewById(R.id.txtSinContactos);
@@ -92,8 +103,8 @@ public class datos_firebase extends AppCompatActivity {
 
         btnSave.setOnClickListener(v -> guardarOActualizarContacto());
         btnEliminar.setOnClickListener(v -> confirmarEliminacion());
+        btnExportarPDF.setOnClickListener(v -> exportarContactosAPDF());
 
-        // NUEVO - Que se borre el error al escribir
         editTextItemNombre.addTextChangedListener(new SimpleWatcher() {
             @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
                 tilNombre.setError(null);
@@ -122,7 +133,6 @@ public class datos_firebase extends AppCompatActivity {
         configurarListenerContactos();
     }
 
-    // NUEVO - VALIDACIÓN CON SNACKBAR
     private boolean validarDatos() {
         String nombre = editTextItemNombre.getText().toString().trim();
         String apellido = editTextDescription.getText().toString().trim();
@@ -233,7 +243,6 @@ public class datos_firebase extends AppCompatActivity {
     }
 
     private void guardarOActualizarContacto() {
-        // AHORA VALIDA ANTES DE GUARDAR
         if (!validarDatos()) return;
 
         String nombre = editTextItemNombre.getText().toString().trim();
@@ -254,6 +263,97 @@ public class datos_firebase extends AppCompatActivity {
             referenciaFirebase.child(contactoSeleccionadoKey).updateChildren(datos)
                     .addOnSuccessListener(unused -> { mostrarExito("Contacto actualizado correctamente"); limpiarFormulario(); })
                     .addOnFailureListener(e -> mostrarError("Error al actualizar: " + e.getMessage()));
+        }
+    }
+
+    // =========== FUNCION PDF ===========
+    private void exportarContactosAPDF() {
+        if (contactos.isEmpty()) {
+            mostrarError("No hay contactos para exportar");
+            return;
+        }
+
+        PdfDocument pdfDocument = new PdfDocument();
+        Paint paint = new Paint();
+        Paint titlePaint = new Paint();
+        Paint headerPaint = new Paint();
+
+        PdfDocument.PageInfo pageInfo = new PdfDocument.PageInfo.Builder(595, 842, 1).create();
+        PdfDocument.Page page = pdfDocument.startPage(pageInfo);
+        Canvas canvas = page.getCanvas();
+
+        titlePaint.setTextSize(20);
+        titlePaint.setFakeBoldText(true);
+        titlePaint.setColor(Color.BLACK);
+        canvas.drawText("Lista de Contactos", 40, 50, titlePaint);
+
+        paint.setTextSize(10);
+        String fecha = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault()).format(new Date());
+        canvas.drawText("Generado: " + fecha + " | Total: " + contactos.size() + " contactos", 40, 75, paint);
+
+        paint.setStrokeWidth(2);
+        paint.setColor(Color.GRAY);
+        canvas.drawLine(40, 85, 555, 85, paint);
+
+        // Encabezado
+        headerPaint.setTextSize(12);
+        headerPaint.setFakeBoldText(true);
+        headerPaint.setColor(Color.WHITE);
+        Paint bgPaint = new Paint();
+        bgPaint.setColor(Color.parseColor("#6200EE"));
+        canvas.drawRect(40, 95, 555, 120, bgPaint);
+        canvas.drawText("No.", 45, 112, headerPaint);
+        canvas.drawText("Nombre Completo", 80, 112, headerPaint);
+        canvas.drawText("Telefono", 350, 112, headerPaint);
+
+        int y = 140;
+        paint.setTextSize(11);
+        paint.setColor(Color.BLACK);
+
+        for (int i = 0; i < contactos.size(); i++) {
+            if (y > 800) {
+                pdfDocument.finishPage(page);
+                page = pdfDocument.startPage(pageInfo);
+                canvas = page.getCanvas();
+                y = 50;
+            }
+            Contacto c = contactos.get(i);
+            String nombreCompleto = c.nombre + " " + c.apellido;
+
+            // Alternar color de fila
+            if (i % 2 == 0) {
+                Paint rowBg = new Paint();
+                rowBg.setColor(Color.parseColor("#F3F0FF"));
+                canvas.drawRect(40, y - 15, 555, y + 5, rowBg);
+            }
+
+            canvas.drawText(String.valueOf(i + 1), 45, y, paint);
+            canvas.drawText(nombreCompleto, 80, y, paint);
+            canvas.drawText(c.telefono, 350, y, paint);
+            y += 22;
+        }
+
+        pdfDocument.finishPage(page);
+
+        try {
+            String fileName = "contactos_" + System.currentTimeMillis() + ".pdf";
+            ContentValues values = new ContentValues();
+            values.put(MediaStore.Downloads.DISPLAY_NAME, fileName);
+            values.put(MediaStore.Downloads.MIME_TYPE, "application/pdf");
+            values.put(MediaStore.Downloads.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS);
+
+            Uri uri = getContentResolver().insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values);
+            if (uri != null) {
+                OutputStream outputStream = getContentResolver().openOutputStream(uri);
+                pdfDocument.writeTo(outputStream);
+                if (outputStream != null) outputStream.close();
+                mostrarExito("PDF guardado en Descargas: " + fileName);
+            }
+        } catch (Exception e) {
+            mostrarError("Error al crear PDF: " + e.getMessage());
+            Log.e(TAG, "Error PDF", e);
+        } finally {
+            pdfDocument.close();
         }
     }
 
@@ -287,7 +387,6 @@ public class datos_firebase extends AppCompatActivity {
         listaContactos.clearChoices();
     }
 
-    // Helper para TextWatcher
     private abstract static class SimpleWatcher implements TextWatcher {
         @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
         @Override public void afterTextChanged(Editable s) {}

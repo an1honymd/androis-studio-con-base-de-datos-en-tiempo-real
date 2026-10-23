@@ -91,6 +91,7 @@
                         android:inputType="phone" />
                 </com.google.android.material.textfield.TextInputLayout>
 
+                <!-- FILA 1: GUARDAR Y ELIMINAR -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -117,6 +118,18 @@
                         app:cornerRadius="14dp"
                         style="@style/Widget.Material3.Button.OutlinedButton" />
                 </LinearLayout>
+
+                <!-- FILA 2: EXPORTAR PDF - YA SEPARADO -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnExportarPDF"
+                    android:layout_width="match_parent"
+                    android:layout_height="52dp"
+                    android:text="Exportar a PDF"
+                    android:layout_marginTop="12dp"
+
+                    app:cornerRadius="14dp"
+                    style="@style/Widget.Material3.Button.TonalButton" />
+
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
