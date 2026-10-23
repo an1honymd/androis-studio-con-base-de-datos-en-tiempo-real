@@ -73,7 +73,6 @@ public class datos_firebase extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.datos_firebase);
 
-        // --- PERMISO NOTIFICACIONES ---
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             requestPermissions(new String[]{android.Manifest.permission.POST_NOTIFICATIONS}, 101);
         }
@@ -149,18 +148,14 @@ public class datos_firebase extends AppCompatActivity {
             mostrarError("El nombre no puede ir vacío");
             editTextItemNombre.requestFocus();
             return false;
-        } else {
-            tilNombre.setError(null);
-        }
+        } else { tilNombre.setError(null); }
 
         if (apellido.isEmpty()) {
             tilApellido.setError("El apellido es obligatorio");
             mostrarError("El apellido no puede ir vacío");
             editTextDescription.requestFocus();
             return false;
-        } else {
-            tilApellido.setError(null);
-        }
+        } else { tilApellido.setError(null); }
 
         if (telefono.isEmpty()) {
             tilTelefono.setError("El teléfono es obligatorio");
@@ -174,25 +169,19 @@ public class datos_firebase extends AppCompatActivity {
             mostrarError("El teléfono debe tener al menos 8 dígitos");
             editTextQuantity.requestFocus();
             return false;
-        } else {
-            tilTelefono.setError(null);
-        }
+        } else { tilTelefono.setError(null); }
 
         return true;
     }
 
     private void mostrarError(String mensaje) {
         Snackbar.make(findViewById(android.R.id.content), mensaje, Snackbar.LENGTH_LONG)
-                .setBackgroundTint(Color.RED)
-                .setTextColor(Color.WHITE)
-                .show();
+                .setBackgroundTint(Color.RED).setTextColor(Color.WHITE).show();
     }
 
     private void mostrarExito(String mensaje) {
         Snackbar.make(findViewById(android.R.id.content), mensaje, Snackbar.LENGTH_LONG)
-                .setBackgroundTint(Color.parseColor("#2E7D32"))
-                .setTextColor(Color.WHITE)
-                .show();
+                .setBackgroundTint(Color.parseColor("#2E7D32")).setTextColor(Color.WHITE).show();
     }
 
     private void configurarListenerContactos() {
@@ -205,25 +194,19 @@ public class datos_firebase extends AppCompatActivity {
                     String nombre = registro.child("nombre").getValue(String.class);
                     String apellido = registro.child("apellido").getValue(String.class);
                     String telefono = registro.child("telefono").getValue(String.class);
-
                     if (key == null) continue;
                     if (nombre == null) nombre = "";
                     if (apellido == null) apellido = "";
                     if (telefono == null) telefono = "";
-
                     contactos.add(new Contacto(key, nombre, apellido, telefono));
                 }
                 adaptador.notifyDataSetChanged();
-
                 if (contactoSeleccionadoKey != null) {
                     boolean existe = false;
-                    for (Contacto c : contactos) {
-                        if (c.key.equals(contactoSeleccionadoKey)) { existe = true; break; }
-                    }
+                    for (Contacto c : contactos) { if (c.key.equals(contactoSeleccionadoKey)) { existe = true; break; } }
                     if (!existe) limpiarFormulario();
                 }
             }
-
             @Override
             public void onCancelled(DatabaseError error) {
                 Log.e(TAG, "Error al consultar contactos: " + error.getMessage());
@@ -250,7 +233,6 @@ public class datos_firebase extends AppCompatActivity {
 
     private void guardarOActualizarContacto() {
         if (!validarDatos()) return;
-
         String nombre = editTextItemNombre.getText().toString().trim();
         String apellido = editTextDescription.getText().toString().trim();
         String telefono = editTextQuantity.getText().toString().trim();
@@ -280,12 +262,37 @@ public class datos_firebase extends AppCompatActivity {
         }
     }
 
+    // --- NUEVO: PREGUNTA EL NOMBRE DEL PDF ---
     private void exportarContactosAPDF() {
         if (contactos.isEmpty()) {
             mostrarError("No hay contactos para exportar");
             return;
         }
 
+        EditText inputNombre = new EditText(this);
+        inputNombre.setHint("Ej: mis_contactos");
+        inputNombre.setPadding(50, 30, 50, 30);
+
+        new AlertDialog.Builder(this)
+                .setTitle("Nombre del PDF")
+                .setMessage("Escribe el nombre o deja vacío para uno aleatorio")
+                .setView(inputNombre)
+                .setNegativeButton("Aleatorio", (dialog, which) -> {
+                    generarPDF("contactos_" + System.currentTimeMillis());
+                })
+                .setPositiveButton("Guardar con este nombre", (dialog, which) -> {
+                    String nombreEscrito = inputNombre.getText().toString().trim();
+                    if (nombreEscrito.isEmpty()) {
+                        generarPDF("contactos_" + System.currentTimeMillis());
+                    } else {
+                        nombreEscrito = nombreEscrito.replaceAll("[^a-zA-Z0-9_\\- ]", "_");
+                        generarPDF(nombreEscrito);
+                    }
+                })
+                .show();
+    }
+
+    private void generarPDF(String nombreArchivoBase) {
         PdfDocument pdfDocument = new PdfDocument();
         Paint paint = new Paint();
         Paint titlePaint = new Paint();
@@ -331,13 +338,11 @@ public class datos_firebase extends AppCompatActivity {
             }
             Contacto c = contactos.get(i);
             String nombreCompleto = c.nombre + " " + c.apellido;
-
             if (i % 2 == 0) {
                 Paint rowBg = new Paint();
                 rowBg.setColor(Color.parseColor("#F3F0FF"));
                 canvas.drawRect(40, y - 15, 555, y + 5, rowBg);
             }
-
             canvas.drawText(String.valueOf(i + 1), 45, y, paint);
             canvas.drawText(nombreCompleto, 80, y, paint);
             canvas.drawText(c.telefono, 350, y, paint);
@@ -347,7 +352,7 @@ public class datos_firebase extends AppCompatActivity {
         pdfDocument.finishPage(page);
 
         try {
-            String fileName = "contactos_" + System.currentTimeMillis() + ".pdf";
+            String fileName = nombreArchivoBase.endsWith(".pdf") ? nombreArchivoBase : nombreArchivoBase + ".pdf";
             ContentValues values = new ContentValues();
             values.put(MediaStore.Downloads.DISPLAY_NAME, fileName);
             values.put(MediaStore.Downloads.MIME_TYPE, "application/pdf");
@@ -358,7 +363,8 @@ public class datos_firebase extends AppCompatActivity {
                 OutputStream outputStream = getContentResolver().openOutputStream(uri);
                 pdfDocument.writeTo(outputStream);
                 if (outputStream != null) outputStream.close();
-                mostrarExito("PDF guardado en Descargas: " + fileName);
+                mostrarExito("PDF guardado: " + fileName);
+                MyFirebaseMessagingService.mostrarNotificacionLocal(this, "PDF Generado", fileName + " guardado en Descargas");
             }
         } catch (Exception e) {
             mostrarError("Error al crear PDF: " + e.getMessage());
@@ -408,47 +414,33 @@ public class datos_firebase extends AppCompatActivity {
     }
 
     private static class ContactoAdapter extends ArrayAdapter<Contacto> {
-        ContactoAdapter(datos_firebase context, ArrayList<Contacto> contactos) {
-            super(context, 0, contactos);
-        }
-
-        @NonNull
-        @Override
+        ContactoAdapter(datos_firebase context, ArrayList<Contacto> contactos) { super(context, 0, contactos); }
+        @NonNull @Override
         public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
             if (convertView == null) {
                 convertView = LayoutInflater.from(getContext()).inflate(R.layout.item_contacto, parent, false);
             }
             Contacto contacto = getItem(position);
             if (contacto == null) return convertView;
-
             TextView tvIniciales = convertView.findViewById(R.id.tvIniciales);
             TextView tvNombre = convertView.findViewById(R.id.tvNombre);
             TextView tvTelefono = convertView.findViewById(R.id.tvTelefono);
-
             String nombreCompleto = (contacto.nombre + " " + contacto.apellido).trim();
             tvNombre.setText(nombreCompleto);
             tvTelefono.setText(contacto.telefono);
-
             String iniciales = "";
             if (!contacto.nombre.isEmpty()) iniciales += contacto.nombre.substring(0, 1).toUpperCase();
             if (!contacto.apellido.isEmpty()) iniciales += contacto.apellido.substring(0, 1).toUpperCase();
             if (iniciales.isEmpty()) iniciales = "C";
             tvIniciales.setText(iniciales);
-
             return convertView;
         }
     }
 
     private static class Contacto {
-        String key;
-        String nombre;
-        String apellido;
-        String telefono;
+        String key; String nombre; String apellido; String telefono;
         Contacto(String key, String nombre, String apellido, String telefono) {
-            this.key = key;
-            this.nombre = nombre;
-            this.apellido = apellido;
-            this.telefono = telefono;
+            this.key = key; this.nombre = nombre; this.apellido = apellido; this.telefono = telefono;
         }
     }
 }
